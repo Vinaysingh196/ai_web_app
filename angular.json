@@ -60,5 +60,8 @@
       }
     }
   },
-  "defaultProject": "ai-web-app"
+  "defaultProject": "ai-web-app",
+  "cli": {
+    "analytics": false
+  }
 }

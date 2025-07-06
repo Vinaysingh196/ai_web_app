@@ -4,6 +4,7 @@
   <div *ngFor="let msg of messages" style="margin-bottom: 12px;">
     <strong>{{ msg.sender }}:</strong> {{ msg.text }}
   </div>
+<app-system-prompt (promptChange)="systemPrompt = $event"></app-system-prompt>
 
   <div *ngIf="isLoading">Aira is typing...</div>
 

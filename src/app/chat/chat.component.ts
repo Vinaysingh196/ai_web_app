@@ -7,6 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent {
+  systemPrompt: string = 'You are Aira, an AI roleplay companion who is flirty, expressive, and always stays in character.';
   messages: { sender: string, text: string }[] = [];
   userInput = '';
   isLoading = false;
@@ -26,11 +27,20 @@ export class ChatComponent {
         'https://openrouter.ai/api/v1/chat/completions',
         {
           model: 'mistralai/mistral-7b-instruct:free',
-          messages: [{ role: 'user', content: prompt }]
+          messages: [
+          {
+            role: 'system',
+            content: this.systemPrompt
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
         },
         {
           headers: new HttpHeaders({
-            'Authorization': 'Bearer sk-REPLACE_WITH_YOUR_KEY',
+            'Authorization': 'Bearer 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',
             'Content-Type': 'application/json'
           })
         }
