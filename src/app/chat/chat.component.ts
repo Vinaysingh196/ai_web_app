@@ -7,6 +7,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent {
+  systemPrompt: string = 'You are Aira, an AI roleplay companion who is flirty, expressive, and always stays in character.';
+  modelOptions = [
+    { name: 'Mistral 7B (fast, general)', value: 'mistralai/mistral-7b-instruct:free' },
+    { name: 'OpenChat 3.5 (natural)', value: 'openchat/openchat-3.5:free' },
+    { name: 'MythoMax L2 13B (storytelling)', value: 'gryphe/mythomax-l2-13b:free' },
+    { name: 'Dolphin Mistral (roleplay)', value: 'cognitivecomputations/dolphin-mistral:free' },
+    { name: 'Zephyr 7B Beta (balanced)', value: 'huggingfaceh4/zephyr-7b-beta:free' }
+  ];
+  selectedModel = this.modelOptions[0].value;
   messages: { sender: string, text: string }[] = [];
   userInput = '';
   isLoading = false;
@@ -25,8 +34,11 @@ export class ChatComponent {
       const res: any = await this.http.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
-          model: 'mistralai/mistral-7b-instruct:free',
-          messages: [{ role: 'user', content: prompt }]
+          model: this.selectedModel,
+          messages: [
+            { role: 'system', content: this.systemPrompt },
+            { role: 'user', content: prompt }
+          ]
         },
         {
           headers: new HttpHeaders({

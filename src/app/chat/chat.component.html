@@ -1,14 +1,17 @@
-<div style="max-width: 600px; margin: auto; padding: 16px;">
-  <h2>💬 Chat with Aira (OpenRouter)</h2>
+<label><strong>🤖 Choose AI Model:</strong></label>
+<select [(ngModel)]="selectedModel" style="margin-bottom: 16px; width: 100%;">
+  <option *ngFor="let m of modelOptions" [value]="m.value">{{ m.name }}</option>
+</select>
 
-  <div *ngFor="let msg of messages" style="margin-bottom: 12px;">
-    <strong>{{ msg.sender }}:</strong> {{ msg.text }}
-  </div>
+<app-system-prompt (promptChange)="systemPrompt = $event"></app-system-prompt>
 
-  <div *ngIf="isLoading">Aira is typing...</div>
-
-  <form (submit)="sendMessage(); $event.preventDefault()">
-    <input [(ngModel)]="userInput" name="msg" required placeholder="Ask something..." style="width: 80%;" />
-    <button type="submit">Send</button>
-  </form>
+<div *ngFor="let msg of messages" style="margin-bottom: 12px;">
+  <strong>{{ msg.sender }}:</strong> {{ msg.text }}
 </div>
+
+<div *ngIf="isLoading">Aira is typing...</div>
+
+<form (submit)="sendMessage(); $event.preventDefault()">
+  <input [(ngModel)]="userInput" name="msg" required placeholder="Ask something..." style="width: 80%;" />
+  <button type="submit">Send</button>
+</form>
