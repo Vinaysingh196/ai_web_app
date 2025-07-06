@@ -12,12 +12,10 @@ export class AppComponent {
 
   async sendMessage() {
     if (!this.userInput.trim()) return;
-
     this.messages.push({ sender: 'You', text: this.userInput });
     const prompt = this.userInput;
     this.userInput = '';
     this.isLoading = true;
-
     const aiResponse = await this.fakeAIResponse(prompt);
     this.messages.push({ sender: 'Aira', text: aiResponse });
     this.isLoading = false;
