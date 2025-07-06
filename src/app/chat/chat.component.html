@@ -1,0 +1,14 @@
+<div style="max-width: 600px; margin: auto; padding: 16px;">
+  <h2>💬 Chat with Aira (OpenRouter)</h2>
+
+  <div *ngFor="let msg of messages" style="margin-bottom: 12px;">
+    <strong>{{ msg.sender }}:</strong> {{ msg.text }}
+  </div>
+
+  <div *ngIf="isLoading">Aira is typing...</div>
+
+  <form (submit)="sendMessage(); $event.preventDefault()">
+    <input [(ngModel)]="userInput" name="msg" required placeholder="Ask something..." style="width: 80%;" />
+    <button type="submit">Send</button>
+  </form>
+</div>
