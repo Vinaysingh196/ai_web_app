@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { ChatComponent } from './chat/chat.component';
-import { SystemPromptComponent } from './chat/system-prompt.component';
+
+import { CharacterSettingsComponent } from './character-settings/character-settings.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChatComponent,
-    SystemPromptComponent
+    CharacterSettingsComponent
   ],
   imports: [
     BrowserModule,

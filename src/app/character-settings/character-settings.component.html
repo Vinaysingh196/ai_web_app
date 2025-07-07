@@ -1,0 +1,51 @@
+<h3>🎭 Your Characters</h3>
+
+<div *ngFor="let char of characters"
+    style="margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <!-- Select Radio Button -->
+        <label style="flex: 1; display: flex; align-items: center;">
+            <input type="radio" name="selectedCharacter" [value]="char.name" [(ngModel)]="selectedCharacterName"
+                (change)="selectCharacter(char)" style="margin-right: 8px;" />
+            <span>
+                <strong>{{ char.name }}</strong> {{ char.avatar }}<br />
+                <small>{{ char.model }}</small>
+            </span>
+        </label>
+
+        <!-- Edit & Delete Buttons -->
+        <div style="display: flex; gap: 8px;">
+            <button (click)="editCharacter(char)">✏️ Edit</button>
+            <button (click)="deleteCharacter(char.id)">🗑️ Delete</button>
+        </div>
+        <button (click)="saveCharacter()">
+            💾 {{ isEditing ? 'Update Character' : 'Save Character' }}
+        </button>
+
+    </div>
+
+    <button (click)="newCharacter()">➕ New Character</button>
+
+    <div *ngIf="showForm">
+        <h4>{{ isEditing ? 'Edit Character' : 'Create Character' }}</h4>
+
+        <input [(ngModel)]="currentCharacter.name" placeholder="Character Name" /><br><br>
+
+        <textarea [(ngModel)]="currentCharacter.systemPrompt" placeholder="System Prompt"></textarea><br><br>
+
+        <label>Model</label>
+        <select [(ngModel)]="currentCharacter.model" style="width: 100%;">
+            <option *ngFor="let m of modelOptions" [value]="m.value">{{ m.name }}</option>
+        </select><br><br>
+
+        <label>Avatar</label>
+        <select [(ngModel)]="currentCharacter.avatar" style="width: 100%;">
+            <option *ngFor="let a of avatarOptions" [value]="a">{{ a }}</option>
+        </select><br><br>
+
+        <button (click)="saveCharacter()">
+            💾 {{ isEditing ? 'Update Character' : 'Save Character' }}
+        </button>
+        <button (click)="cancelForm()">❌ Cancel</button>
+    </div>
+</div>

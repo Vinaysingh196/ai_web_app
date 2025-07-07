@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Character } from '../shared/character.model';
 
 @Component({
   selector: 'app-chat',
@@ -7,46 +8,32 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit {
-  systemPrompt: string = 'You are Aira, an AI roleplay companion who is flirty, expressive, and always stays in character.';
-  modelOptions: { name: string, value: string }[] = [];
-  selectedModel = '';
-  messages: { sender: string, text: string }[] = [];
+  messages: { sender: string; text: string }[] = [];
   userInput = '';
   isLoading = false;
+  showCharacters = false; // Toggle for character settings
+
+  selectedCharacter!: Character; // Holds the active character
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadModels();
+    // Load previously selected character from localStorage (optional)
+    const saved = localStorage.getItem('selectedCharacter');
+    if (saved) {
+      this.selectedCharacter = JSON.parse(saved);
+    }
   }
 
-  loadModels() {
-    this.http.get<any>('https://openrouter.ai/api/v1/models').subscribe({
-      next: (res) => {
-        const freeModels = res.data.filter((m: any) => {
-  const promptPrice = m?.pricing?.prompt;
-  return !promptPrice || promptPrice === "0";
-});
-       console.log('Selected model set to:', freeModels);
-
-        this.modelOptions = freeModels.map((m: any) => ({
-          name: m.name,
-          value: m.id
-        }));
-
-        if (this.modelOptions.length > 0) {
-          this.selectedModel = this.modelOptions[0].value;
-          console.log('Selected model set to:', this.selectedModel);
-        }
-      },
-      error: (err) => {
-        console.error('Failed to fetch models:', err);
-      }
-    });
+  // Triggered from <app-character-settings>
+  onCharacterSelected(char: Character) {
+    this.selectedCharacter = char;
+    localStorage.setItem('selectedCharacter', JSON.stringify(char)); // Optional auto-save
+    console.log('Active character:', char);
   }
 
   async sendMessage() {
-    if (!this.userInput.trim() || !this.selectedModel) return;
+    if (!this.userInput.trim() || !this.selectedCharacter?.model) return;
 
     const prompt = this.userInput;
     this.messages.push({ sender: 'You', text: prompt });
@@ -57,9 +44,9 @@ export class ChatComponent implements OnInit {
       const res: any = await this.http.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
-          model: this.selectedModel,
+          model: this.selectedCharacter.model,
           messages: [
-            { role: 'system', content: this.systemPrompt },
+            { role: 'system', content: this.selectedCharacter.systemPrompt },
             { role: 'user', content: prompt }
           ]
         },
@@ -72,10 +59,10 @@ export class ChatComponent implements OnInit {
       ).toPromise();
 
       const aiReply = res.choices?.[0]?.message?.content || '(No reply)';
-      this.messages.push({ sender: 'Aira', text: aiReply });
+      this.messages.push({ sender: this.selectedCharacter.name || 'AI', text: aiReply });
     } catch (err) {
       console.error(err);
-      this.messages.push({ sender: 'Aira', text: '(Error getting response or model not available)' });
+      this.messages.push({ sender: 'AI', text: '(Error getting response or model not available)' });
     }
 
     this.isLoading = false;
