@@ -1,6 +1,10 @@
 <label><strong>🤖 Choose AI Model:</strong></label>
-<select [(ngModel)]="selectedModel" style="margin-bottom: 16px; width: 100%;">
-  <option *ngFor="let m of modelOptions" [value]="m.value">{{ m.name }}</option>
+<p>Available: {{ modelOptions.length }} | Selected: {{ selectedModel }}</p>
+
+<select [(ngModel)]="selectedModel" name="model" style="margin-bottom: 16px; width: 100%;">
+  <option *ngFor="let m of modelOptions" [value]="m.value">
+    {{ m.name }}
+  </option>
 </select>
 
 <app-system-prompt (promptChange)="systemPrompt = $event"></app-system-prompt>

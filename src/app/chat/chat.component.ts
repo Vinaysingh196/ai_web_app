@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -6,24 +6,47 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent {
+export class ChatComponent implements OnInit {
   systemPrompt: string = 'You are Aira, an AI roleplay companion who is flirty, expressive, and always stays in character.';
-  modelOptions = [
-    { name: 'Mistral 7B (fast, general)', value: 'mistralai/mistral-7b-instruct:free' },
-    { name: 'OpenChat 3.5 (natural)', value: 'openchat/openchat-3.5:free' },
-    { name: 'MythoMax L2 13B (storytelling)', value: 'gryphe/mythomax-l2-13b:free' },
-    { name: 'Dolphin Mistral (roleplay)', value: 'cognitivecomputations/dolphin-mistral:free' },
-    { name: 'Zephyr 7B Beta (balanced)', value: 'huggingfaceh4/zephyr-7b-beta:free' }
-  ];
-  selectedModel = this.modelOptions[0].value;
+  modelOptions: { name: string, value: string }[] = [];
+  selectedModel = '';
   messages: { sender: string, text: string }[] = [];
   userInput = '';
   isLoading = false;
 
   constructor(private http: HttpClient) {}
 
+  ngOnInit(): void {
+    this.loadModels();
+  }
+
+  loadModels() {
+    this.http.get<any>('https://openrouter.ai/api/v1/models').subscribe({
+      next: (res) => {
+        const freeModels = res.data.filter((m: any) => {
+  const promptPrice = m?.pricing?.prompt;
+  return !promptPrice || promptPrice === "0";
+});
+       console.log('Selected model set to:', freeModels);
+
+        this.modelOptions = freeModels.map((m: any) => ({
+          name: m.name,
+          value: m.id
+        }));
+
+        if (this.modelOptions.length > 0) {
+          this.selectedModel = this.modelOptions[0].value;
+          console.log('Selected model set to:', this.selectedModel);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch models:', err);
+      }
+    });
+  }
+
   async sendMessage() {
-    if (!this.userInput.trim()) return;
+    if (!this.userInput.trim() || !this.selectedModel) return;
 
     const prompt = this.userInput;
     this.messages.push({ sender: 'You', text: prompt });
@@ -52,7 +75,7 @@ export class ChatComponent {
       this.messages.push({ sender: 'Aira', text: aiReply });
     } catch (err) {
       console.error(err);
-      this.messages.push({ sender: 'Aira', text: '(Error getting response)' });
+      this.messages.push({ sender: 'Aira', text: '(Error getting response or model not available)' });
     }
 
     this.isLoading = false;
