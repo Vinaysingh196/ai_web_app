@@ -52,7 +52,7 @@ export class ChatComponent implements OnInit {
         },
         {
           headers: new HttpHeaders({
-            'Authorization': 'Bearer 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',
+            'Authorization': 'Bearer YOUR_API_KEY',
             'Content-Type': 'application/json'
           })
         }

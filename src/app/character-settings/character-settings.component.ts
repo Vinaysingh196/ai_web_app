@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Character } from '../shared/character.model';
+import { CharacterService } from '../services/character.service';
 
 @Component({
   selector: 'app-character-settings',
@@ -18,8 +19,7 @@ export class CharacterSettingsComponent implements OnInit {
   isEditing = false;
   showForm = false;
 
-
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private characterService: CharacterService) {}
 
   ngOnInit(): void {
     this.loadModels();
@@ -43,45 +43,55 @@ export class CharacterSettingsComponent implements OnInit {
     });
   }
 
-  loadCharacters() {
-    const saved = localStorage.getItem('characters');
-    this.characters = saved ? JSON.parse(saved) : [];
-  }
-
-editCharacter(char: Character) {
-  this.currentCharacter = { ...char }; // contains id
-  this.isEditing = true;
-  this.showForm = true;
-}
-
-
-newCharacter() {
-  this.currentCharacter = { name: '', systemPrompt: '', model: '', avatar: '🤖' };
-  this.isEditing = false;
-  this.showForm = true;
-}
-
-saveCharacter() {
-  if (!this.currentCharacter.name.trim()) return;
-
-  // If it's a new character (no ID), give it one
-  if (!this.currentCharacter.id) {
-    this.currentCharacter.id = Date.now().toString(); // or use UUID if needed
-    this.characters.push({ ...this.currentCharacter });
-  } else {
-    // Edit existing character by ID
-    const index = this.characters.findIndex(c => c.id === this.currentCharacter.id);
-    if (index >= 0) {
-      this.characters[index] = { ...this.currentCharacter };
+  async loadCharacters() {
+    try {
+      const firebaseChars = await this.characterService.getCharacters();
+      const localChars = localStorage.getItem('characters');
+      this.characters = firebaseChars.length ? firebaseChars : (localChars ? JSON.parse(localChars) : []);
+    } catch (err) {
+      console.error('Error loading characters from Firestore:', err);
+      const fallback = localStorage.getItem('characters');
+      this.characters = fallback ? JSON.parse(fallback) : [];
     }
   }
 
-  localStorage.setItem('characters', JSON.stringify(this.characters));
-  this.loadCharacters();
-  this.showForm = false;
-  this.isEditing = false;
-}
+  editCharacter(char: Character) {
+    this.currentCharacter = { ...char }; // contains id
+    this.isEditing = true;
+    this.showForm = true;
+  }
 
+  newCharacter() {
+    this.currentCharacter = { name: '', systemPrompt: '', model: '', avatar: '🤖' };
+    this.isEditing = false;
+    this.showForm = true;
+  }
+
+  async saveCharacter() {
+    if (!this.currentCharacter.name.trim()) return;
+
+    if (!this.currentCharacter.id) {
+      this.currentCharacter.id = Date.now().toString();
+      this.characters.push({ ...this.currentCharacter });
+    } else {
+      const index = this.characters.findIndex(c => c.id === this.currentCharacter.id);
+      if (index >= 0) {
+        this.characters[index] = { ...this.currentCharacter };
+      }
+    }
+
+    localStorage.setItem('characters', JSON.stringify(this.characters));
+
+    try {
+      await this.characterService.saveCharacter(this.currentCharacter);
+    } catch (err) {
+      console.error('Error saving to Firestore:', err);
+    }
+
+    this.loadCharacters();
+    this.showForm = false;
+    this.isEditing = false;
+  }
 
   selectCharacter(char: Character) {
     this.selectedCharacterName = char.name;
@@ -90,26 +100,32 @@ saveCharacter() {
     this.characterSelected.emit(char);
   }
 
-  deleteCharacter(id: string) {
+ async deleteCharacter(id: string) {
   if (!confirm(`Delete this character?`)) return;
+
   this.characters = this.characters.filter(c => c.id !== id);
   localStorage.setItem('characters', JSON.stringify(this.characters));
+
+  try {
+    await this.characterService.deleteCharacter(id);
+  } catch (err) {
+    console.error('Failed to delete from Firestore:', err);
+  }
 
   if (this.currentCharacter.id === id) {
     this.cancelForm();
   }
 }
 
+  resetForm() {
+    this.currentCharacter = { name: '', systemPrompt: '', model: '', avatar: '🤖' };
+    this.isEditing = false;
+  }
 
-resetForm() {
-  this.currentCharacter = { name: '', systemPrompt: '', model: '', avatar: '🤖' };
-  this.isEditing = false;
+  cancelForm() {
+    this.showForm = false;
+    this.isEditing = false;
+  }
 }
 
-cancelForm() {
-  this.showForm = false;
-  this.isEditing = false;
-}
 
-
-}
