@@ -1,32 +1,29 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
-import { ChatComponent } from './chat/chat.component';
+
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+
+import { environment } from '../environments/environment';
 
 import { CharacterSettingsComponent } from './character-settings/character-settings.component';
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFireAuthModule } from '@angular/fire/compat/auth';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
-import { environment } from 'src/environments/environment';
-
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ChatComponent,
     CharacterSettingsComponent
   ],
   imports: [
     BrowserModule,
-    FormsModule,
     HttpClientModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule
   ],
+  providers: [],
   bootstrap: [AppComponent]
 })
-
-export class AppModule {}
+export class AppModule { }
